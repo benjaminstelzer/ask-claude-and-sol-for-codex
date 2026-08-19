@@ -1,7 +1,0 @@
-{
-  "model": "claude-fable-5",
-  "effort": "high",
-  "max_budget_usd": 10,
-  "session_persistence": true,
-  "customizations": false
-}

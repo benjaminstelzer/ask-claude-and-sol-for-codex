@@ -1,0 +1,18 @@
+{
+  "claude": {
+    "command": "claude",
+    "model": "claude-fable-5",
+    "effort": "high",
+    "max_budget_usd": 10,
+    "session_persistence": true,
+    "customizations": false
+  },
+  "sol": {
+    "command": "codex",
+    "model": "gpt-5.6-sol",
+    "effort": "high",
+    "session_persistence": true,
+    "customizations": false,
+    "web_search": "live"
+  }
+}

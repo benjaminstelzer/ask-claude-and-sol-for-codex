@@ -1,65 +1,66 @@
-# Ask Claude for Codex
+# Ask Claude and SOL for Codex
 
-A second opinion is useful only when it is actually a second opinion.
+A second opinion is useful. Two independent second opinions are more useful
+when they do not take turns borrowing each other's assumptions.
 
-[![Test](https://github.com/benjaminstelzer/ask-claude-for-codex/actions/workflows/test.yml/badge.svg)](https://github.com/benjaminstelzer/ask-claude-for-codex/actions/workflows/test.yml)
+[![Test](https://github.com/benjaminstelzer/ask-claude-and-sol-for-codex/actions/workflows/test.yml/badge.svg)](https://github.com/benjaminstelzer/ask-claude-and-sol-for-codex/actions/workflows/test.yml)
 
-Ask Claude for Codex is an Agent Skill that lets Codex consult the locally
-authenticated Claude Code CLI without leaving the current task. The Claude
-session is read-only and isolated from local Claude customizations by default.
-It can still persist across follow-up questions, because rebuilding the same
-context for every objection is independence taken a little too literally.
+Ask Claude and SOL for Codex is an Agent Skill that sends the same question to
+the locally authenticated Claude Code and Codex CLIs in parallel. Claude and a
+separate SOL session inspect the task independently, then Codex receives both
+answers together.
 
-The default is **Fable 5 with high reasoning effort**. A request can select
-another Claude model alias or full model ID, change the effort level and budget,
-or deliberately enable the local Claude setup.
+Both conversations persist by default. A follow-up can continue the pair with
+their two session IDs or target only one adviser. Claude and SOL have separate
+model, effort, persistence, customization, and command settings.
+
+The defaults are **Fable 5** and **GPT-5.6 SOL**, both with high reasoning
+effort.
 
 ## Why this Skill?
 
-Asking another model can expose a weak assumption, an overlooked failure path,
-or a genuinely different reading. But another model inside the same
-instructions, plugins and project framing is not as independent as the phrase
-"second opinion" suggests. This Skill keeps the consultation separate by
-default, gives it a fixed read-only tool surface, and makes the remaining
-choices explicit.
+One external review can expose a weak assumption. Two can also expose whether
+the apparent agreement survives different model families and runtimes.
 
-Claude's answer is still advice. Codex must verify it before the answer becomes
-an edit, a decision, or the wonderfully confident announcement that everything
-is now fixed.
+That only works when the two consultations remain independent. The wrapper
+starts both processes concurrently, gives them the same prompt, and keeps their
+answers attributed. It does not ask one model to summarize the other before
+Main sees the evidence.
+
+Agreement is still not proof. Main must verify any claim before it becomes an
+edit, a Decision, a publication, or another confident victory speech from a
+green unit test.
 
 ## How to use
 
 Invoke the Skill explicitly or ask naturally:
 
 ```text
-$ask-claude-for-codex Review this implementation plan with the defaults.
+$ask-claude-and-sol-for-codex Review this implementation plan with the defaults.
 ```
 
 ```text
-Ask Opus 5 with max reasoning to challenge this architecture.
+Frage Fable und SOL, ob dieser Fix die eigentliche Ursache behebt.
 ```
 
 ```text
-Frage Fable, ob dieser Fix die eigentliche Ursache behebt.
+Ask Opus with max effort and SOL with xhigh effort to challenge this architecture.
 ```
 
 Unless overridden, the Skill uses:
 
-| Setting | Default |
-| --- | --- |
-| Model | `claude-fable-5` |
-| Reasoning effort | `high` |
-| Budget ceiling | USD 10 |
-| Claude tools | `Read,Grep,Glob,WebSearch,WebFetch` |
-| Session persistence | Enabled |
-| Claude customizations | Disabled with safe mode |
+| Setting | Claude | SOL |
+| --- | --- | --- |
+| Model | `claude-fable-5` | `gpt-5.6-sol` |
+| Reasoning effort | `high` | `high` |
+| Budget ceiling | USD 10 | CLI/account limit |
+| Web access | `WebSearch`, `WebFetch` | live Codex search |
+| Session persistence | Enabled | Enabled |
+| Local customizations | Disabled | Disabled |
+| Filesystem access | Read-only tools | Read-only sandbox |
 
-Model values are passed to Claude Code as aliases or full IDs. For example,
-`opus` selects the current Opus alias. Effort accepts `low`, `medium`, `high`,
-`xhigh` or `max`.
-
-Explicit `$ask-claude-for-codex` invocation works on hosts that support named
-Skill invocation.
+Explicit `$ask-claude-and-sol-for-codex` invocation works on hosts that support
+named Skill invocation.
 
 ## Install
 
@@ -68,146 +69,169 @@ Codex install it with this prompt:
 
 ```text
 Install this Agent Skill from GitHub and make it available for all my projects:
-https://github.com/benjaminstelzer/ask-claude-for-codex/tree/main/ask-claude-for-codex
+https://github.com/benjaminstelzer/ask-claude-and-sol-for-codex/tree/main/ask-claude-and-sol-for-codex
 ```
 
-For a manual installation, copy the repository's `ask-claude-for-codex/`
-directory so the final path is:
+For a manual installation, copy the repository's
+`ask-claude-and-sol-for-codex/` directory so the final path is:
 
 ```text
-<skills-dir>/ask-claude-for-codex/SKILL.md
+<skills-dir>/ask-claude-and-sol-for-codex/SKILL.md
 ```
 
-The Skill requires Python and an authenticated `claude` command on `PATH`.
-Claude Code usage limits and model charges still apply.
+The Skill requires Python, an authenticated `claude` command, and an
+authenticated `codex` command. Codex CLI 0.148.0 or newer is required. The
+wrapper itself uses only Python's standard library.
 
 ## What it enforces
 
-- **A deliberate second opinion.** Model, reasoning effort and budget are
-  explicit instead of being hidden inside the wrapper.
-- **Read-only consultation.** Claude receives `Read`, `Grep`, `Glob`,
-  `WebSearch` and `WebFetch`, but not Bash, Edit or Write.
-- **Isolation by default.** `CLAUDE.md`, Claude Skills, plugins, hooks, MCP
-  servers and custom commands stay disabled unless the request enables them.
-- **Persistent follow-up when useful.** The first consultation starts a saved
-  conversation by default, while a request can start fresh or remain stateless.
-- **Advice without borrowed authority.** Claude cannot authorize edits, expand
-  scope, accept a Decision, publish changes or override Codex instructions.
-- **An explicit data boundary.** Search queries and fetched URLs leave the
-  local machine. Secrets and unrelated private data do not belong in prompts.
-
-The complete contract is in
-[`SKILL.md`](ask-claude-for-codex/SKILL.md).
+- **Real parallelism.** Claude and SOL start concurrently rather than waiting
+  for one answer to frame the other.
+- **Separate attribution.** Main receives two provider results with their own
+  model, effort, session, metadata, answer, and error fields.
+- **Useful partial failure.** If one provider fails, the successful answer is
+  still returned. The process exits nonzero and marks the result `partial`.
+- **Persistent follow-up.** Both session IDs are returned and can be resumed
+  together. A follow-up may also target only Claude or only SOL.
+- **Read-only consultation.** Claude has fixed read and web tools. SOL uses the
+  Codex read-only sandbox with approvals disabled.
+- **Isolation by default.** Local instructions, memories, Skills, plugins,
+  hooks, apps, and related customizations stay out of the SOL consultation.
+  Claude uses its safe mode.
+- **Advice without borrowed authority.** Neither provider can authorize edits,
+  publication, spending, a scope expansion, or weaker safeguards.
 
 ## How it works
 
-The wrapper starts Claude Code with the selected model, effort, budget and
-fixed tool list. Its configuration, conversation state and customization mode
-are separate concerns: changing one does not quietly change the others.
+The Python wrapper reads one UTF-8 prompt from standard input and launches two
+subprocesses. Claude returns one JSON result. Codex runs in non-interactive
+`exec --json` mode and returns a JSONL event stream. The wrapper extracts SOL's
+`thread.started` session ID, final `agent_message`, usage data, and completed
+item types, then emits one combined JSON object.
+
+The official Codex CLI supports JSONL output and resumable non-interactive
+sessions through `codex exec resume`. The implementation follows those public
+interfaces rather than reading Codex's private session files.
 
 ### Configuration
 
 The shipped
-[`config.default.json`](ask-claude-for-codex/config.default.json) contains every
-available setting:
+[`config.default.json`](ask-claude-and-sol-for-codex/config.default.json)
+contains every persistent setting:
 
 ```json
 {
-  "model": "claude-fable-5",
-  "effort": "high",
-  "max_budget_usd": 10,
-  "session_persistence": true,
-  "customizations": false
+  "claude": {
+    "command": "claude",
+    "model": "claude-fable-5",
+    "effort": "high",
+    "max_budget_usd": 10,
+    "session_persistence": true,
+    "customizations": false
+  },
+  "sol": {
+    "command": "codex",
+    "model": "gpt-5.6-sol",
+    "effort": "high",
+    "session_persistence": true,
+    "customizations": false,
+    "web_search": "live"
+  }
 }
 ```
 
-To change permanent behavior, copy `config.default.json` to `config.json` in
-the same directory and edit the personal file. It is ignored by Git and takes
-precedence over the shipped defaults. Without either file, the same defaults
-remain available as an internal fallback.
+Copy it to `config.json` in the same directory for personal defaults. That file
+is ignored by Git and takes precedence over the shipped configuration.
 
-| Setting | Meaning |
-| --- | --- |
-| `model` | Claude model alias or full model ID |
-| `effort` | Reasoning effort: `low`, `medium`, `high`, `xhigh` or `max` |
-| `max_budget_usd` | Maximum spend for one consultation |
-| `session_persistence` | Whether Claude conversations are saved for follow-up questions |
-| `customizations` | Whether Claude uses the local Claude setup or starts as an isolated second opinion |
+`command` may be a command name on `PATH` or an absolute executable path. This
+is useful on Windows when a local npm Codex runtime should take precedence over
+the WindowsApps executable. No operating-system-specific path is committed to
+the Skill.
 
-For a one-time change, put the choice in the request instead of editing the
-file:
-
-```text
-Ask Opus 5 with max reasoning and a USD 3 budget to review this architecture.
-```
+Claude and SOL model IDs and effort levels can be changed independently for one
+request or in the personal configuration. Claude also has a per-call budget
+ceiling. Codex uses the limits of its authenticated CLI account.
 
 ### Conversations
 
-The first consultation starts a saved Claude conversation by default.
-Follow-up questions in the same Codex task continue it, so Claude retains the
-earlier exchange. Ask for a new conversation when the topic changes, or ask for
-a fresh, stateless consultation when the exchange should not be saved.
-
-Session persistence stores the conversation. Customizations control the
-environment Claude uses. They are independent.
-
-### Claude customizations
-
-With `customizations` set to `false`, Claude starts in safe mode. It does not
-load `CLAUDE.md` files, project instructions, Claude Skills, plugins, hooks,
-MCP servers or custom commands. This is the default because it produces a more
-independent second opinion than asking the existing setup to admire its own
-homework.
-
-With `customizations` set to `true`, Claude can use that local setup. Enable it
-when the consultation should follow Claude-specific project instructions, use
-a configured Claude Skill or include context from an MCP server. The wrapper
-still withholds Claude's built-in Bash, Edit and Write tools. Configured hooks,
-plugins or MCP servers can introduce their own behavior or side effects, so
-enabling customizations deliberately reduces isolation.
-
-For one consultation, say so in the request:
+The first paired consultation creates two saved conversations by default. The
+combined output contains:
 
 ```text
-Ask Claude with my local customizations to review this plan.
+providers.claude.session_id
+providers.sol.session_id
 ```
 
-### Safety boundary
+A paired follow-up resumes both IDs. If only one adviser needs another question,
+the wrapper can run with `--provider claude` or `--provider sol`.
 
-Read-only tools prevent direct Bash, Edit and Write use. They do not make
-arbitrary content safe to disclose. Search queries and fetched URLs leave the
-local machine. Prompts must not contain credentials, tokens, private keys,
-secret-bearing URLs, private source text, or unrelated personal data.
+`--fresh` disables persistence for one call. `--continue-sessions` resumes each
+provider's latest conversation in the current working directory, but explicit
+IDs are safer when several discussions exist.
 
-Conversation persistence grants no additional tools or permissions. When
-customizations are enabled, their configured hooks and extensions remain
-outside the built-in tool boundary.
+### Isolation
+
+Claude's safe mode and fixed tool list match the original Ask Claude for Codex
+boundary.
+
+SOL starts with user config and rules ignored, project instruction loading
+suppressed, memories disabled, installed Skill entrypoints disabled, unrelated
+capability families disabled, approval policy `never`, and filesystem sandbox
+`read-only`. A small fixed instruction file defines only the second-opinion
+role. Read-only shell inspection and the configured web-search mode remain
+available because a reviewer who cannot inspect the evidence is mostly a mood
+ring.
+
+Either provider can deliberately use local customizations for a consultation.
+That enables project-specific context, but hooks, plugins, MCP servers, apps,
+or similar extensions can introduce behavior outside the wrapper's built-in
+boundary. The option therefore reduces isolation and should be explicit.
+
+### Data boundary
+
+Read-only tools do not make arbitrary content safe to disclose. Search queries
+and fetched URLs leave the local machine. Prompts must not contain credentials,
+tokens, private keys, secret-bearing URLs, private source text that should not
+reach either provider, or unrelated personal data.
+
+## Cross-platform behavior
+
+The wrapper avoids shell-specific process construction and accepts executable
+names or absolute paths. PowerShell examples set BOM-less UTF-8 before piping;
+the Python input layer also tolerates the UTF-8 preamble emitted by Windows
+PowerShell 5.1.
+
+Deterministic tests run on Windows, macOS, and Linux. They verify orchestration,
+command construction, session routing, JSON and JSONL parsing, partial failure,
+isolation flags, and UTF-8 stream setup. Those tests do not claim that every
+machine already has authenticated Claude and Codex CLIs.
 
 ## Related projects
 
+- [Ask Claude for Codex](https://github.com/benjaminstelzer/ask-claude-for-codex)
+  is the single-provider base for this Skill.
 - [Scoville Code](https://github.com/benjaminstelzer/scoville-code-anti-ai-slop)
-  keeps implementation, scope and validation with Codex after the consultation.
-- [Scoville Scribe](https://github.com/benjaminstelzer/scoville-scribe-anti-ai-slop)
-  protects meaning and terminology when the second opinion concerns writing.
+  keeps implementation, scope, and validation with Main after consultation.
 - [Codex, Fable-calibrated style](https://github.com/benjaminstelzer/codex-fable-like-system-prompt-for-gpt-5.6-sol)
   supplies the broader collaboration style used by my Codex setup.
 
 ## Status
 
-The deterministic wrapper tests run on Linux and Windows. They cover UTF-8
-stream setup, Claude result parsing, error handling, configuration-error
-behavior, and the exact read-and-web tool surface without Bash, Edit, or Write.
-Live model quality still depends on the selected Claude model and the evidence
-available in the task. The wrapper can create distance, not omniscience.
+The deterministic wrapper tests cover all three desktop operating-system
+families. Live provider quality still depends on the selected models, account
+access, and available evidence. Parallel disagreement is information, not a
+bug.
 
 ## Sources
 
-- [`SKILL.md`](ask-claude-for-codex/SKILL.md) defines activation, authority and
-  the consultation workflow.
-- [`ask_claude.py`](ask-claude-for-codex/scripts/ask_claude.py) implements the
-  Claude Code wrapper.
-- [`test_ask_claude.py`](tests/test_ask_claude.py) defines the deterministic
-  regression coverage.
+- [`SKILL.md`](ask-claude-and-sol-for-codex/SKILL.md) defines activation,
+  authority, and the consultation workflow.
+- [`ask_claude_and_sol.py`](ask-claude-and-sol-for-codex/scripts/ask_claude_and_sol.py)
+  implements parallel Claude and SOL orchestration.
+- [`test_ask_claude_and_sol.py`](tests/test_ask_claude_and_sol.py) defines the
+  deterministic regression coverage.
+- [OpenAI Codex non-interactive mode](https://developers.openai.com/codex/noninteractive)
+  documents JSONL output and resumable `codex exec` sessions.
 
 ## License
 

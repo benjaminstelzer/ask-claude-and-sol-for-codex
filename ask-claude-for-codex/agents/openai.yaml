@@ -1,4 +1,0 @@
-interface:
-  display_name: "Ask Claude for Codex"
-  short_description: "Read-only second opinions from Claude Code"
-  default_prompt: "Use $ask-claude-for-codex to ask Claude for a persistent read-only second opinion."
