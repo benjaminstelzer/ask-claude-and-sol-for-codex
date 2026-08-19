@@ -7,12 +7,12 @@ when they do not take turns borrowing each other's assumptions.
 
 Ask Claude and SOL for Codex is an Agent Skill that sends the same question to
 the locally authenticated Claude Code and Codex CLIs in parallel. Claude and a
-separate SOL session inspect the task independently, then Codex receives both
-answers together.
+separate SOL session inspect the task independently, then the calling Codex
+receives both answers together.
 
-Both conversations persist by default. A follow-up can continue the pair with
-their two session IDs or target only one adviser. Claude and SOL have separate
-model, effort, persistence, customization, and command settings.
+Both conversations persist by default. When both CLIs return session IDs, a
+follow-up can continue the pair or target only one adviser. Claude and SOL have
+separate model, effort, persistence, customization, and command settings.
 
 The defaults are **Fable 5** and **GPT-5.6 SOL**, both with high reasoning
 effort.
@@ -25,11 +25,11 @@ the apparent agreement survives different model families and runtimes.
 That only works when the two consultations remain independent. The wrapper
 starts both processes concurrently, gives them the same prompt, and keeps their
 answers attributed. It does not ask one model to summarize the other before
-Main sees the evidence.
+the calling Codex sees the evidence.
 
-Agreement is still not proof. Main must verify any claim before it becomes an
-edit, a Decision, a publication, or another confident victory speech from a
-green unit test.
+Agreement is still not proof. The calling Codex must verify any claim before it
+becomes an edit, a Decision, a publication, or another confident victory speech
+from a green unit test.
 
 ## How to use
 
@@ -79,20 +79,23 @@ For a manual installation, copy the repository's
 <skills-dir>/ask-claude-and-sol-for-codex/SKILL.md
 ```
 
-The Skill requires Python, an authenticated `claude` command, and an
-authenticated `codex` command. Codex CLI 0.148.0 or newer is required. The
-wrapper itself uses only Python's standard library.
+The Skill requires Python 3.9 or newer, an authenticated `claude` command, and
+an authenticated `codex` command. Codex CLI 0.148.0 or newer is required. The
+wrapper itself uses only Python's standard library; CI currently tests it with
+Python 3.11.
 
 ## What it enforces
 
 - **Real parallelism.** Claude and SOL start concurrently rather than waiting
   for one answer to frame the other.
-- **Separate attribution.** Main receives two provider results with their own
-  model, effort, session, metadata, answer, and error fields.
+- **Separate attribution.** The calling Codex receives `requested_model`,
+  `requested_effort`, `session_mode`, and `session_id` for each provider, plus
+  provider-specific metadata and an attributed `answer` or `error`.
 - **Useful partial failure.** If one provider fails, the successful answer is
   still returned. The process exits nonzero and marks the result `partial`.
-- **Persistent follow-up.** Both session IDs are returned and can be resumed
-  together. A follow-up may also target only Claude or only SOL.
+- **Persistent follow-up.** Persistent calls expose the session IDs returned by
+  each CLI. When both IDs are present, the pair can be resumed together; a
+  follow-up may also target only Claude or only SOL.
 - **Read-only consultation.** Claude has fixed read and web tools. SOL uses the
   Codex read-only sandbox with approvals disabled.
 - **Isolation by default.** Local instructions, memories, Skills, plugins,
@@ -148,22 +151,23 @@ is useful on Windows when a local npm Codex runtime should take precedence over
 the WindowsApps executable. No operating-system-specific path is committed to
 the Skill.
 
-Claude and SOL model IDs and effort levels can be changed independently for one
-request or in the personal configuration. Claude also has a per-call budget
-ceiling. Codex uses the limits of its authenticated CLI account.
+Claude and SOL model aliases or full IDs and effort levels can be changed
+independently for one request or in the personal configuration. Claude also has
+a per-call budget ceiling. The Codex CLI uses the limits of its authenticated
+account.
 
 ### Conversations
 
-The first paired consultation creates two saved conversations by default. The
-combined output contains:
+The first paired consultation starts persistent sessions by default. When both
+CLIs return session IDs, the combined output exposes them at:
 
 ```text
 providers.claude.session_id
 providers.sol.session_id
 ```
 
-A paired follow-up resumes both IDs. If only one adviser needs another question,
-the wrapper can run with `--provider claude` or `--provider sol`.
+A paired follow-up can resume both IDs. If only one adviser needs another
+question, the wrapper can run with `--provider claude` or `--provider sol`.
 
 `--fresh` disables persistence for one call. `--continue-sessions` resumes each
 provider's latest conversation in the current working directory, but explicit
@@ -197,9 +201,10 @@ reach either provider, or unrelated personal data.
 ## Cross-platform behavior
 
 The wrapper avoids shell-specific process construction and accepts executable
-names or absolute paths. PowerShell examples set BOM-less UTF-8 before piping;
-the Python input layer also tolerates the UTF-8 preamble emitted by Windows
-PowerShell 5.1.
+names or absolute paths. The PowerShell examples in
+[`SKILL.md`](ask-claude-and-sol-for-codex/SKILL.md) set BOM-less UTF-8 before
+piping; the Python input layer also tolerates the UTF-8 preamble emitted by
+Windows PowerShell 5.1.
 
 Deterministic tests run on Windows, macOS, and Linux. They verify orchestration,
 command construction, session routing, JSON and JSONL parsing, partial failure,
@@ -211,16 +216,15 @@ machine already has authenticated Claude and Codex CLIs.
 - [Ask Claude for Codex](https://github.com/benjaminstelzer/ask-claude-for-codex)
   is the single-provider base for this Skill.
 - [Scoville Code](https://github.com/benjaminstelzer/scoville-code-anti-ai-slop)
-  keeps implementation, scope, and validation with Main after consultation.
+  keeps implementation, scope, and validation with the calling Codex after
+  consultation.
 - [Codex, Fable-calibrated style](https://github.com/benjaminstelzer/codex-fable-like-system-prompt-for-gpt-5.6-sol)
   supplies the broader collaboration style used by my Codex setup.
 
 ## Status
 
-The deterministic wrapper tests cover all three desktop operating-system
-families. Live provider quality still depends on the selected models, account
-access, and available evidence. Parallel disagreement is information, not a
-bug.
+Live provider quality still depends on the selected models, account access, and
+available evidence. Parallel disagreement is information, not a bug.
 
 ## Sources
 
