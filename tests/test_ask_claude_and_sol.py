@@ -38,7 +38,7 @@ def base_args(**overrides: object) -> Namespace:
         "claude_customizations_enabled": False,
         "sol_command": "codex",
         "sol_model": "gpt-5.6-sol",
-        "sol_effort": "high",
+        "sol_effort": "xhigh",
         "sol_web_search": "live",
         "sol_resume": None,
         "sol_session_persistence_default": True,
@@ -142,7 +142,7 @@ class AskClaudeAndSolTests(unittest.TestCase):
         self.assertIn("--strict-config", command)
         self.assertIn('sandbox_mode="read-only"', command)
         self.assertIn('approval_policy="never"', command)
-        self.assertIn('model_reasoning_effort="high"', command)
+        self.assertIn('model_reasoning_effort="xhigh"', command)
         self.assertIn('web_search="live"', command)
         self.assertTrue(any(value.startswith("skills.config=[") for value in command))
         self.assertEqual(command[-1], "-")
@@ -203,13 +203,19 @@ class AskClaudeAndSolTests(unittest.TestCase):
     def test_config_validates_independent_provider_settings(self) -> None:
         config = json.loads(json.dumps(ask_both.FALLBACK_CONFIG))
         config["claude"]["model"] = "opus"
-        config["sol"]["effort"] = "xhigh"
+        config["sol"]["effort"] = "max"
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "config.json"
             path.write_text(json.dumps(config), encoding="utf-8")
             loaded = ask_both.load_config(path)
         self.assertEqual(loaded["claude"]["model"], "opus")
-        self.assertEqual(loaded["sol"]["effort"], "xhigh")
+        self.assertEqual(loaded["sol"]["effort"], "max")
+
+    def test_sol_defaults_to_xhigh(self) -> None:
+        shipped = ask_both.load_config(ask_both.DEFAULT_CONFIG_PATH)
+        self.assertEqual(shipped["sol"]["effort"], "xhigh")
+        self.assertEqual(ask_both.FALLBACK_CONFIG["sol"]["effort"], "xhigh")
+        self.assertEqual(ask_both.parse_args([]).sol_effort, "xhigh")
 
     def test_help_survives_a_configuration_error(self) -> None:
         with (

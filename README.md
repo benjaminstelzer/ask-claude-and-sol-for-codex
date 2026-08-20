@@ -14,8 +14,8 @@ Both conversations persist by default. When both CLIs return session IDs, a
 follow-up can continue the pair or target only one adviser. Claude and SOL have
 separate model, effort, persistence, customization, and command settings.
 
-The defaults are **Fable 5** and **GPT-5.6 SOL**, both with high reasoning
-effort.
+The defaults are **Fable 5 with high reasoning effort** and **GPT-5.6 SOL with
+`xhigh` (very high) reasoning effort**.
 
 ## Why this Skill?
 
@@ -44,7 +44,7 @@ Frage Fable und SOL, ob dieser Fix die eigentliche Ursache behebt.
 ```
 
 ```text
-Ask Opus with max effort and SOL with xhigh effort to challenge this architecture.
+Ask Opus and SOL with max effort to challenge this architecture.
 ```
 
 Unless overridden, the Skill uses:
@@ -52,7 +52,7 @@ Unless overridden, the Skill uses:
 | Setting | Claude | SOL |
 | --- | --- | --- |
 | Model | `claude-fable-5` | `gpt-5.6-sol` |
-| Reasoning effort | `high` | `high` |
+| Reasoning effort | `high` | `xhigh` |
 | Budget ceiling | USD 10 | CLI/account limit |
 | Web access | `WebSearch`, `WebFetch` | live Codex search |
 | Session persistence | Enabled | Enabled |
@@ -135,7 +135,7 @@ contains every persistent setting:
   "sol": {
     "command": "codex",
     "model": "gpt-5.6-sol",
-    "effort": "high",
+    "effort": "xhigh",
     "session_persistence": true,
     "customizations": false,
     "web_search": "live"

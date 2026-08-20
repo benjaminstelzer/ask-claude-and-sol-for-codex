@@ -56,7 +56,7 @@ FALLBACK_CONFIG: dict[str, Any] = {
     "sol": {
         "command": "codex",
         "model": "gpt-5.6-sol",
-        "effort": "high",
+        "effort": "xhigh",
         "session_persistence": True,
         "customizations": False,
         "web_search": "live",

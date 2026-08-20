@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-08-20: SOL xhigh default (v1.0.1)
+
+### Changed
+
+- Raised the default SOL reasoning effort from `high` to `xhigh` while keeping
+  Fable at `high` and preserving explicit per-call and personal configuration
+  overrides.
+- Updated the shipped configuration, internal fallback, Skill contract, README,
+  examples, and regression coverage together.
+
+### Validation
+
+- The official OpenAI model guidance lists `xhigh` as a supported GPT-5.6 SOL
+  reasoning effort and keeps `max` available as the separate highest setting.
+- Deterministic tests verify that shipped, fallback, parsed, and command-level
+  SOL defaults all resolve to `xhigh`.
+- A live call without an effort override requested `xhigh` and completed through
+  Codex CLI `0.148.0`.
+
 ## 2026-08-19: Initial release (v1.0.0)
 
 ### Added

@@ -18,7 +18,7 @@ Use these values unless the user provides different ones:
 - Claude effort: `high`
 - Claude budget ceiling: USD 10
 - SOL model: `gpt-5.6-sol`
-- SOL effort: `high`
+- SOL effort: `xhigh`
 - SOL web search: `live`
 - Session persistence: enabled for both providers
 - Local customizations: disabled for both providers
@@ -76,7 +76,7 @@ Override either adviser independently when requested:
 $OutputEncoding = New-Object System.Text.UTF8Encoding $false
 $prompt | python <skill-dir>/scripts/ask_claude_and_sol.py `
   --claude-model opus --claude-effort max `
-  --sol-model gpt-5.6-sol --sol-effort xhigh
+  --sol-model gpt-5.6-sol --sol-effort max
 ```
 
 Continue the paired conversation with both returned IDs:
