@@ -5,31 +5,30 @@ when they do not take turns borrowing each other's assumptions.
 
 [![Test](https://github.com/benjaminstelzer/ask-claude-and-sol-for-codex/actions/workflows/test.yml/badge.svg)](https://github.com/benjaminstelzer/ask-claude-and-sol-for-codex/actions/workflows/test.yml)
 
-Ask Claude and SOL for Codex is an Agent Skill that sends the same question to
-the locally authenticated Claude Code and Codex CLIs in parallel. Claude and a
-separate SOL session inspect the task independently, then the calling Codex
-receives both answers together.
-
-Both conversations persist by default. When both CLIs return session IDs, a
-follow-up can continue the pair or target only one adviser. Claude and SOL have
-separate model, effort, persistence, customization, and command settings.
+Ask Claude and SOL for Codex is an Agent Skill that sends one question to
+Claude Code and a fresh Codex SOL subagent in parallel. Claude runs through its
+own authenticated CLI. SOL runs inside the Codex host that invoked the Skill,
+so it needs no second Codex CLI, runtime installation, executable lookup, or
+login.
 
 The defaults are **Fable 5 with high reasoning effort** and **GPT-5.6 SOL with
 `xhigh` (very high) reasoning effort**.
 
-## Why this Skill?
+## Why this architecture?
 
-One external review can expose a weak assumption. Two can also expose whether
-the apparent agreement survives different model families and runtimes.
+The earlier implementation launched a second Codex CLI process for SOL. That
+worked until the Codex desktop executable found through WindowsApps refused to
+start as a child process. Installing another private Codex runtime would repair
+the symptom while preserving the unnecessary second runtime.
 
-That only works when the two consultations remain independent. The wrapper
-starts both processes concurrently, gives them the same prompt, and keeps their
-answers attributed. It does not ask one model to summarize the other before
-the calling Codex sees the evidence.
+Current Codex releases already provide subagents in the desktop app, CLI, and
+IDE extension. A fresh SOL subagent is therefore the canonical owner of the
+second Codex opinion. It starts without copied parent turns, receives the same
+self-contained question as Claude, and returns its result to the calling task.
 
-Agreement is still not proof. The calling Codex must verify any claim before it
-becomes an edit, a Decision, a publication, or another confident victory speech
-from a green unit test.
+That distinction matters: fresh context protects the comparison from the main
+conversation's draft reasoning. It does not create a separate sandbox. The SOL
+subagent still inherits host-level instructions, tools, and permissions.
 
 ## How to use
 
@@ -53,14 +52,11 @@ Unless overridden, the Skill uses:
 | --- | --- | --- |
 | Model | `claude-fable-5` | `gpt-5.6-sol` |
 | Reasoning effort | `high` | `xhigh` |
-| Budget ceiling | USD 10 | CLI/account limit |
-| Web access | `WebSearch`, `WebFetch` | live Codex search |
-| Session persistence | Enabled | Enabled |
-| Local customizations | Disabled | Disabled |
-| Filesystem access | Read-only tools | Read-only sandbox |
-
-Explicit `$ask-claude-and-sol-for-codex` invocation works on hosts that support
-named Skill invocation.
+| Budget ceiling | USD 10 | Host/account limit |
+| Context | Independent Claude session | Fresh subagent, no copied parent turns |
+| Continuation | Claude session ID | Agent target in the current Codex task |
+| Filesystem boundary | Fixed read-only tools | Host permissions plus a read-only instruction |
+| Local customizations | Disabled by Claude safe mode | Host configuration may still apply |
 
 ## Install
 
@@ -79,48 +75,45 @@ For a manual installation, copy the repository's
 <skills-dir>/ask-claude-and-sol-for-codex/SKILL.md
 ```
 
-The Skill requires Python 3.9 or newer, an authenticated `claude` command, and
-an authenticated `codex` command. Codex CLI 0.148.0 or newer is required. The
-wrapper itself uses only Python's standard library; CI currently tests it with
-Python 3.11.
+Requirements:
 
-## What it enforces
+- a current Codex host with subagents enabled;
+- Python 3.9 or newer;
+- an authenticated Claude Code command.
 
-- **Real parallelism.** Claude and SOL start concurrently rather than waiting
-  for one answer to frame the other.
-- **Separate attribution.** The calling Codex receives `requested_model`,
-  `requested_effort`, `session_mode`, and `session_id` for each provider, plus
-  provider-specific metadata and an attributed `answer` or `error`.
-- **Useful partial failure.** If one provider fails, the successful answer is
-  still returned. The process exits nonzero and marks the result `partial`.
-- **Persistent follow-up.** Persistent calls expose the session IDs returned by
-  each CLI. When both IDs are present, the pair can be resumed together; a
-  follow-up may also target only Claude or only SOL.
-- **Read-only consultation.** Claude has fixed read and web tools. SOL uses the
-  Codex read-only sandbox with approvals disabled.
-- **Isolation by default.** Local instructions, memories, Skills, plugins,
-  hooks, apps, and related customizations stay out of the SOL consultation.
-  Claude uses its safe mode.
-- **Advice without borrowed authority.** Neither provider can authorize edits,
-  publication, spending, a scope expansion, or weaker safeguards.
+No Codex CLI installation is required by the Skill. If subagents are disabled
+or unavailable, the Skill returns the Claude result as a partial consultation
+instead of silently falling back to another Codex runtime.
+
+Claude Code is a separate Anthropic product. Follow Anthropic's official setup
+and authentication flow when `claude` is not installed or signed in.
 
 ## How it works
 
-The Python wrapper reads one UTF-8 prompt from standard input and launches two
-subprocesses. Claude returns one JSON result. Codex runs in non-interactive
-`exec --json` mode and returns a JSONL event stream. The wrapper extracts SOL's
-`thread.started` session ID, final `agent_message`, usage data, and completed
-item types, then emits one combined JSON object.
+The calling Codex prepares one self-contained consultation body before either
+provider starts. It then:
 
-The official Codex CLI supports JSONL output and resumable non-interactive
-sessions through `codex exec resume`. The implementation follows those public
-interfaces rather than reading Codex's private session files.
+1. spawns SOL with a fresh context and immediately retains the returned agent
+   target;
+2. pipes the same consultation body to the Claude adapter without waiting for
+   SOL;
+3. collects both answers independently;
+4. presents Claude and SOL separately before synthesizing agreement,
+   disagreement, and checks that matter.
+
+Starting the subagent first means SOL is already working while the potentially
+long Claude process runs. Neither adviser sees the other's answer.
+
+The Python adapter handles only Claude transport: safe-mode tool restrictions,
+model and effort selection, budget limits, JSON parsing, errors, and Claude
+session continuation. Paired orchestration belongs to `SKILL.md` because only
+the Codex host can spawn and manage subagents.
 
 ### Configuration
 
 The shipped
 [`config.default.json`](ask-claude-and-sol-for-codex/config.default.json)
-contains every persistent setting:
+contains the persistent defaults:
 
 ```json
 {
@@ -133,12 +126,8 @@ contains every persistent setting:
     "customizations": false
   },
   "sol": {
-    "command": "codex",
     "model": "gpt-5.6-sol",
-    "effort": "xhigh",
-    "session_persistence": true,
-    "customizations": false,
-    "web_search": "live"
+    "effort": "xhigh"
   }
 }
 ```
@@ -146,96 +135,81 @@ contains every persistent setting:
 Copy it to `config.json` in the same directory for personal defaults. That file
 is ignored by Git and takes precedence over the shipped configuration.
 
-`command` may be a command name on `PATH` or an absolute executable path. This
-is useful on Windows when a local npm Codex runtime should take precedence over
-the WindowsApps executable. No operating-system-specific path is committed to
-the Skill.
+`claude.command` may be a command on `PATH` or an absolute executable path.
+Claude and SOL model and effort settings can also be overridden for one
+consultation. A requested SOL model must be available through the current host;
+the Skill does not substitute another model silently.
 
-Claude and SOL model aliases or full IDs and effort levels can be changed
-independently for one request or in the personal configuration. Claude also has
-a per-call budget ceiling. The Codex CLI uses the limits of its authenticated
-account.
+### Follow-ups
 
-### Conversations
+The first paired consultation retains two different continuation handles:
 
-The first paired consultation starts persistent sessions by default. When both
-CLIs return session IDs, the combined output exposes them at:
+- Claude's returned session ID;
+- SOL's agent target in the current Codex task.
 
-```text
-providers.claude.session_id
-providers.sol.session_id
-```
+A paired follow-up triggers a new turn on the existing SOL agent with the host's
+follow-up control and resumes Claude with its explicit session ID. A passive
+message does not wake an idle SOL agent. Provider-specific follow-ups contact
+only the requested adviser. If one handle is unavailable, the surviving
+provider can continue and the result is marked partial.
 
-A paired follow-up can resume both IDs. If only one adviser needs another
-question, the wrapper can run with `--provider claude` or `--provider sol`.
+The SOL target is not a portable CLI session ID. It cannot promise resume from
+a new Codex task or another installation. A newly spawned SOL agent is a fresh
+consultation, not a continuation.
 
-`--fresh` disables persistence for one call. `--continue-sessions` resumes each
-provider's latest conversation in the current working directory, but explicit
-IDs are safer when several discussions exist.
+## Failure behavior
 
-### Isolation
+- **Complete:** Claude and SOL both returned answers.
+- **Partial:** one provider returned an answer while the other failed or was
+  unavailable.
+- **Failed:** neither provider returned an answer.
 
-Claude's safe mode and fixed tool list match the original Ask Claude for Codex
-boundary.
+Missing subagent support never triggers a Codex CLI fallback. A Claude failure
+never discards a successful SOL result. Agreement is still not proof; the
+calling Codex must verify claims before they become edits, Decisions,
+publication, spending, or another confident victory speech from a green unit
+test.
 
-SOL starts with user config and rules ignored, project instruction loading
-suppressed, memories disabled, installed Skill entrypoints disabled, unrelated
-capability families disabled, approval policy `never`, and filesystem sandbox
-`read-only`. A small fixed instruction file defines only the second-opinion
-role. Read-only shell inspection and the configured web-search mode remain
-available because a reviewer who cannot inspect the evidence is mostly a mood
-ring.
+## Independence and security limits
 
-Either provider can deliberately use local customizations for a consultation.
-That enables project-specific context, but hooks, plugins, MCP servers, apps,
-or similar extensions can introduce behavior outside the wrapper's built-in
-boundary. The option therefore reduces isolation and should be explicit.
+Claude receives only `Read`, `Grep`, `Glob`, `WebSearch`, and `WebFetch`, with
+Bash, Edit, and Write withheld. Safe mode disables local Claude
+customizations.
 
-### Data boundary
+SOL receives a fresh conversation plus a read-only instruction. The current
+host spawn interface does not give this Skill a separate sandbox or approval
+policy for that subagent. Host-level system instructions, tools, permissions,
+Skills, plugins, and other capabilities may still apply. The Skill therefore
+claims conversational independence, not a customization-free or separately
+sandboxed SOL runtime.
 
-Read-only tools do not make arbitrary content safe to disclose. Search queries
-and fetched URLs leave the local machine. Prompts must not contain credentials,
-tokens, private keys, secret-bearing URLs, private source text that should not
-reach either provider, or unrelated personal data.
+Read-only intent does not make arbitrary content safe to disclose. Search
+queries and fetched URLs leave the local machine. Prompts must not contain
+credentials, tokens, private keys, secret-bearing URLs, private source text
+that should not reach either provider, or unrelated personal data.
 
-## Cross-platform behavior
+## Validation boundary
 
-The wrapper avoids shell-specific process construction and accepts executable
-names or absolute paths. The PowerShell examples in
-[`SKILL.md`](ask-claude-and-sol-for-codex/SKILL.md) set BOM-less UTF-8 before
-piping; the Python input layer also tolerates the UTF-8 preamble emitted by
-Windows PowerShell 5.1.
+Deterministic tests cover the Claude adapter, configuration, UTF-8 handling,
+session routing, error preservation, and the absence of the former Codex CLI
+runtime path. They cannot prove host-native subagent orchestration.
 
-Deterministic tests run on Windows, macOS, and Linux. They verify orchestration,
-command construction, session routing, JSON and JSONL parsing, partial failure,
-isolation flags, and UTF-8 stream setup. Those tests do not claim that every
-machine already has authenticated Claude and Codex CLIs.
-
-## Related projects
-
-- [Ask Claude for Codex](https://github.com/benjaminstelzer/ask-claude-for-codex)
-  is the single-provider base for this Skill.
-- [Scoville Code](https://github.com/benjaminstelzer/scoville-code-anti-ai-slop)
-  keeps implementation, scope, and validation with the calling Codex after
-  consultation.
-- [Codex, Fable-calibrated style](https://github.com/benjaminstelzer/codex-fable-like-system-prompt-for-gpt-5.6-sol)
-  supplies the broader collaboration style used by my Codex setup.
-
-## Status
-
-Live provider quality still depends on the selected models, account access, and
-available evidence. Parallel disagreement is information, not a bug.
+Host-level acceptance checks must verify fresh SOL context, parallel dispatch,
+partial failure in both directions, provider-specific follow-ups, attribution,
+and an unchanged repository after a nominal review.
 
 ## Sources
 
 - [`SKILL.md`](ask-claude-and-sol-for-codex/SKILL.md) defines activation,
-  authority, and the consultation workflow.
-- [`ask_claude_and_sol.py`](ask-claude-and-sol-for-codex/scripts/ask_claude_and_sol.py)
-  implements parallel Claude and SOL orchestration.
-- [`test_ask_claude_and_sol.py`](tests/test_ask_claude_and_sol.py) defines the
-  deterministic regression coverage.
-- [OpenAI Codex non-interactive mode](https://developers.openai.com/codex/noninteractive)
-  documents JSONL output and resumable `codex exec` sessions.
+  orchestration, authority, and failure behavior.
+- [`ask_claude.py`](ask-claude-and-sol-for-codex/scripts/ask_claude.py) implements
+  the Claude transport.
+- [`test_ask_claude.py`](tests/test_ask_claude.py) defines deterministic adapter
+  coverage.
+- [OpenAI Codex subagents](https://developers.openai.com/codex/subagents/)
+  documents host-native parallel agents in current Codex releases.
+- [Anthropic Claude Code setup](https://code.claude.com/docs/en/setup) documents
+  Claude installation and authentication.
 
 ## License
 

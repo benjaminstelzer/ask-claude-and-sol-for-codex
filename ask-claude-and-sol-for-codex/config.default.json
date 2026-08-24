@@ -8,11 +8,7 @@
     "customizations": false
   },
   "sol": {
-    "command": "codex",
     "model": "gpt-5.6-sol",
-    "effort": "xhigh",
-    "session_persistence": true,
-    "customizations": false,
-    "web_search": "live"
+    "effort": "xhigh"
   }
 }

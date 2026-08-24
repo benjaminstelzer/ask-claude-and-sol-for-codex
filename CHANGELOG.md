@@ -1,5 +1,39 @@
 # Changelog
 
+## 2026-08-24: Host-native SOL subagent (v2.0.0)
+
+### Changed
+
+- Replaced the second Codex CLI process with a fresh host-native SOL subagent.
+  The Skill no longer installs, locates, authenticates, or invokes a Codex CLI.
+- Moved paired dispatch, collection, attribution, partial-failure handling, and
+  follow-up routing into `SKILL.md`, where the calling Codex can access the
+  host's subagent controls.
+- Reduced the Python wrapper to the Claude Code adapter and retained Claude's
+  read-only tools, safe mode, configuration, JSON errors, and session resume.
+- Reduced SOL configuration to model and effort. Removed its command, web-search,
+  customization, CLI persistence, and runtime settings.
+
+### Contract changes
+
+- Fresh SOL context prevents parent turns from being copied, but the subagent
+  inherits host-level instructions, tools, and permissions. Read-only SOL
+  behavior is instructed rather than enforced by a separate sandbox.
+- SOL follow-ups use an agent target within the current Codex task. They are not
+  portable CLI session IDs and do not promise cross-task resume.
+- The calling Codex now combines provider results; there is no paired wrapper
+  JSON object, Codex CLI version, JSONL usage record, or completed-item list.
+- Hosts without usable subagents return a partial Claude result instead of
+  falling back to another Codex runtime.
+
+### Validation
+
+- Deterministic tests cover the Claude adapter and reject the removed SOL CLI
+  configuration and runtime path.
+- A host-level acceptance run dispatched a fresh SOL subagent before starting
+  the Claude adapter. Both returned independently, and a later turn-triggering
+  follow-up to the retained SOL target recalled its earlier task context.
+
 ## 2026-08-20: SOL xhigh default (v1.0.1)
 
 ### Changed

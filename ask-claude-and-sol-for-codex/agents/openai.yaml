@@ -1,4 +1,4 @@
 interface:
   display_name: "Ask Claude and SOL for Codex"
-  short_description: "Parallel opinions from Claude and SOL"
-  default_prompt: "Use $ask-claude-and-sol-for-codex to ask Claude and SOL for persistent read-only second opinions."
+  short_description: "Claude plus a fresh SOL subagent"
+  default_prompt: "Use $ask-claude-and-sol-for-codex to ask Claude and a fresh SOL subagent for parallel second opinions."
