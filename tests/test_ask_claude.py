@@ -24,7 +24,7 @@ SPEC.loader.exec_module(ask_claude)
 def base_args(**overrides: object) -> Namespace:
     values: dict[str, object] = {
         "command": "claude",
-        "model": "claude-fable-5",
+        "model": "claude-fable-5-1",
         "effort": "high",
         "max_budget_usd": 10,
         "fresh": False,
@@ -87,6 +87,8 @@ class AskClaudeTests(unittest.TestCase):
     def test_claude_command_keeps_exact_read_only_tool_surface(self) -> None:
         command = ask_claude.build_command(base_args(fresh=True), ["claude"])
         tools = "Read,Grep,Glob,WebSearch,WebFetch"
+        self.assertEqual(command[command.index("--model") + 1], "claude-fable-5-1")
+        self.assertEqual(command[command.index("--effort") + 1], "high")
         self.assertEqual(command[command.index("--tools") + 1], tools)
         self.assertEqual(command[command.index("--allowed-tools") + 1], tools)
         self.assertIn("--safe-mode", command)
@@ -107,6 +109,8 @@ class AskClaudeTests(unittest.TestCase):
         self.assertEqual(config["sol"]["model"], "gpt-5.6-sol")
         self.assertEqual(config["sol"]["effort"], "xhigh")
         self.assertEqual(config["claude"]["command"], "claude")
+        self.assertEqual(config["claude"]["model"], "claude-fable-5-1")
+        self.assertEqual(config["claude"]["effort"], "high")
 
     def test_config_rejects_removed_sol_cli_fields(self) -> None:
         config = json.loads(json.dumps(ask_claude.FALLBACK_CONFIG))
@@ -145,7 +149,7 @@ class AskClaudeTests(unittest.TestCase):
             returncode=0,
             stdout=(
                 '{"is_error":false,"result":"Claude answer",'
-                '"session_id":"claude-id","model":"claude-fable-5"}'
+                '"session_id":"claude-id","model":"claude-fable-5-1"}'
             ),
             stderr="",
         )

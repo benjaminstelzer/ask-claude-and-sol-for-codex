@@ -11,7 +11,7 @@ own authenticated CLI. SOL runs inside the Codex host that invoked the Skill,
 so it needs no second Codex CLI, runtime installation, executable lookup, or
 login.
 
-The defaults are **Fable 5 with high reasoning effort** and **GPT-5.6 SOL with
+The defaults are **Fable 5.1 with high reasoning effort** and **GPT-5.6 SOL with
 `xhigh` (very high) reasoning effort**.
 
 ## Why this architecture?
@@ -50,7 +50,7 @@ Unless overridden, the Skill uses:
 
 | Setting | Claude | SOL |
 | --- | --- | --- |
-| Model | `claude-fable-5` | `gpt-5.6-sol` |
+| Model | `claude-fable-5-1` | `gpt-5.6-sol` |
 | Reasoning effort | `high` | `xhigh` |
 | Budget ceiling | USD 10 | Host/account limit |
 | Context | Independent Claude session | Fresh subagent, no copied parent turns |
@@ -79,7 +79,7 @@ Requirements:
 
 - a current Codex host with subagents enabled;
 - Python 3.9 or newer;
-- an authenticated Claude Code command.
+- an authenticated Claude Code 2.1.255 or newer command.
 
 No Codex CLI installation is required by the Skill. If subagents are disabled
 or unavailable, the Skill returns the Claude result as a partial consultation
@@ -119,7 +119,7 @@ contains the persistent defaults:
 {
   "claude": {
     "command": "claude",
-    "model": "claude-fable-5",
+    "model": "claude-fable-5-1",
     "effort": "high",
     "max_budget_usd": 10,
     "session_persistence": true,

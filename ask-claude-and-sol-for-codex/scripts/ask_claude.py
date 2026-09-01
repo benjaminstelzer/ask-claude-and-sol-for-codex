@@ -34,7 +34,7 @@ SOL_CONFIG_KEYS = {"model", "effort"}
 FALLBACK_CONFIG: dict[str, Any] = {
     "claude": {
         "command": "claude",
-        "model": "claude-fable-5",
+        "model": "claude-fable-5-1",
         "effort": "high",
         "max_budget_usd": 10,
         "session_persistence": True,

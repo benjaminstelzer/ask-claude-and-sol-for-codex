@@ -14,7 +14,7 @@ current Codex task.
 
 Use these values unless the user provides different ones:
 
-- Claude model: `claude-fable-5`
+- Claude model: `claude-fable-5-1`
 - Claude effort: `high`
 - Claude budget ceiling: USD 10
 - SOL model: `gpt-5.6-sol`
@@ -31,7 +31,8 @@ shipped `config.default.json`, then the defaults above.
 The SOL consultation uses the Codex host's subagent capability. It requires no
 second Codex CLI, executable lookup, installation, or authentication. Claude
 still requires Python 3.9 or newer and an authenticated Claude Code command.
-`claude.command` may be a command on `PATH` or an absolute path.
+The Fable 5.1 default requires Claude Code 2.1.255 or newer. `claude.command`
+may be a command on `PATH` or an absolute path.
 
 ## Build one consultation
 

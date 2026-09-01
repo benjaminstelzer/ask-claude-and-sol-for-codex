@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-09-01: Fable 5.1 default (v2.0.1)
+
+### Changed
+
+- Raised the Claude default from Fable 5 to Fable 5.1 while preserving `high`
+  Claude effort and the independent GPT-5.6 SOL `xhigh` default.
+- Updated the shipped configuration, Claude adapter fallback, Skill contract,
+  README, and regression coverage to request `claude-fable-5-1` consistently.
+
+### Validation
+
+- The deterministic Claude-adapter tests and Agent Skill package validation
+  passed.
+- A host-level acceptance run dispatched a fresh SOL subagent and a live Claude
+  consultation on Claude Code 2.1.257. Claude requested
+  `claude-fable-5-1` with `high` effort and returned without permission denials;
+  both advisers returned independently.
+
 ## 2026-08-24: Host-native SOL subagent (v2.0.0)
 
 ### Changed
