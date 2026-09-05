@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased - 2026-09-05 audit fixes
+## v2.1.0 - 2026-09-05
 
 - Shortened the README, moved contributor layout notes to docs/maintenance.md, and made agent installation the primary path. Safety and evidence limits remain explicit.
 - Added the optional --timeout-seconds Claude CLI setting, disabled by default. Expiry returns exit 124 without retry or budget escalation.
