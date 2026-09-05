@@ -27,6 +27,7 @@ def base_args(**overrides: object) -> Namespace:
         "model": "claude-fable-5-1",
         "effort": "high",
         "max_budget_usd": 10,
+        "timeout_seconds": None,
         "fresh": False,
         "persistent": False,
         "resume": None,

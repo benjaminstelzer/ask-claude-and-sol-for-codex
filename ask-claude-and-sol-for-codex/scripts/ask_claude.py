@@ -65,6 +65,13 @@ def positive_amount(value: str) -> float:
     return amount
 
 
+def positive_timeout(value: str) -> float:
+    seconds = float(value)
+    if not math.isfinite(seconds) or seconds <= 0:
+        raise argparse.ArgumentTypeError("timeout seconds must be finite and greater than zero")
+    return seconds
+
+
 def model_name(value: str) -> str:
     if not MODEL_PATTERN.fullmatch(value):
         raise argparse.ArgumentTypeError("model must be an alias or full model ID")
@@ -182,6 +189,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=claude["max_budget_usd"],
     )
 
+    parser.add_argument(
+        "--timeout-seconds",
+        type=positive_timeout,
+        default=None,
+        help="optional Claude process deadline in seconds (default: disabled)",
+    )
     session_group = parser.add_mutually_exclusive_group()
     session_group.add_argument(
         "--fresh", action="store_true", help="run without saving a Claude session"
@@ -355,6 +368,7 @@ def run() -> int:
             errors="replace",
             capture_output=True,
             check=False,
+            timeout=args.timeout_seconds,
         )
         if completed.returncode != 0:
             raise RuntimeError(_process_error(completed))
@@ -365,6 +379,11 @@ def run() -> int:
         answer = claude_result.get("result")
         if not isinstance(answer, str) or not answer.strip():
             raise RuntimeError("Claude returned no answer")
+    except subprocess.TimeoutExpired:
+        print(f"ask-claude: Claude deadline exceeded after {args.timeout_seconds:g} seconds. No automatic retry.", file=sys.stderr)
+        if args.resume:
+            print(f"ask-claude: Last known resume session: {args.resume}", file=sys.stderr)
+        return 124
     except (OSError, RuntimeError, ValueError) as error:
         print(f"ask-claude: {error}", file=sys.stderr)
         return 1

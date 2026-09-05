@@ -14,21 +14,14 @@ login.
 The defaults are **Fable 5.1 with high reasoning effort** and **GPT-5.6 SOL with
 `xhigh` (very high) reasoning effort**.
 
-## Why this architecture?
+## Why this Skill?
 
-The earlier implementation launched a second Codex CLI process for SOL. That
-worked until the Codex desktop executable found through WindowsApps refused to
-start as a child process. Installing another private Codex runtime would repair
-the symptom while preserving the unnecessary second runtime.
+A fresh SOL subagent receives the same self-contained question as Claude,
+without copied parent turns or the other adviser's answer. It uses the existing
+Codex host rather than launching another Codex CLI.
 
-Current Codex releases already provide subagents in the desktop app, CLI, and
-IDE extension. A fresh SOL subagent is therefore the canonical owner of the
-second Codex opinion. It starts without copied parent turns, receives the same
-self-contained question as Claude, and returns its result to the calling task.
-
-That distinction matters: fresh context protects the comparison from the main
-conversation's draft reasoning. It does not create a separate sandbox. The SOL
-subagent still inherits host-level instructions, tools, and permissions.
+Fresh context separates the conversations. It does not create a separate
+sandbox. SOL still inherits host instructions, tools, and permissions.
 
 ## How to use
 
@@ -39,11 +32,11 @@ $ask-claude-and-sol-for-codex Review this implementation plan with the defaults.
 ```
 
 ```text
-Frage Fable und SOL, ob dieser Fix die eigentliche Ursache behebt.
+Ask Fable and SOL whether this fix addresses the root cause.
 ```
 
 ```text
-Ask Opus and SOL with max effort to challenge this architecture.
+Ask Claude using model alias opus and SOL with max effort to challenge this architecture.
 ```
 
 Unless overridden, the Skill uses:
@@ -60,102 +53,73 @@ Unless overridden, the Skill uses:
 
 ## Install
 
-The repository contains one installable Agent Skill directory. Usually, let
-Codex install it with this prompt:
+In a local Codex session, ask:
 
 ```text
-Install this Agent Skill from GitHub and make it available for all my projects:
+Install this Agent Skill for all my projects from this exact package directory:
 https://github.com/benjaminstelzer/ask-claude-and-sol-for-codex/tree/main/ask-claude-and-sol-for-codex
+Preserve existing customizations and ask before overwriting conflicting files.
+Report the installed location and whether the host discovers the Skill.
 ```
 
-For a manual installation, copy the repository's
-`ask-claude-and-sol-for-codex/` directory so the final path is:
+The agent needs source access and permission to write to its personal Skills
+location. Manual fallback: [Codex Skills guide](https://learn.chatgpt.com/docs/build-skills).
 
-```text
-<skills-dir>/ask-claude-and-sol-for-codex/SKILL.md
-```
+Requires Python 3.9 or newer and an authenticated Claude Code 2.1.255 or newer.
+Claude usage limits and model charges apply.
+The Codex host also needs subagents and access to `gpt-5.6-sol` with `xhigh`
+effort. No separate Codex CLI is required. Missing subagent support produces a
+partial consultation when Claude succeeds, not a fallback runtime.
 
-Requirements:
+## What it enforces
 
-- a current Codex host with subagents enabled;
-- Python 3.9 or newer;
-- an authenticated Claude Code 2.1.255 or newer command.
-
-No Codex CLI installation is required by the Skill. If subagents are disabled
-or unavailable, the Skill returns the Claude result as a partial consultation
-instead of silently falling back to another Codex runtime.
-
-Claude Code is a separate Anthropic product. Follow Anthropic's official setup
-and authentication flow when `claude` is not installed or signed in.
+- **One question, two conversations.** Neither adviser sees the other's answer.
+- **No silent model substitution.** Requested models must be available.
+- **Independent results.** One failure does not discard the other answer.
+- **Advice stays advice.** Only the calling task can act within its authority.
 
 ## How it works
 
-The calling Codex prepares one self-contained consultation body before either
-provider starts. It then:
-
-1. spawns SOL with a fresh context and immediately retains the returned agent
-   target;
-2. pipes the same consultation body to the Claude adapter without waiting for
-   SOL;
-3. collects both answers independently;
-4. presents Claude and SOL separately before synthesizing agreement,
-   disagreement, and checks that matter.
-
-Starting the subagent first means SOL is already working while the potentially
-long Claude process runs. Neither adviser sees the other's answer.
-
-The Python adapter handles only Claude transport: safe-mode tool restrictions,
-model and effort selection, budget limits, JSON parsing, errors, and Claude
-session continuation. Paired orchestration belongs to `SKILL.md` because only
-the Codex host can spawn and manage subagents.
+Codex prepares one consultation body, starts a fresh SOL subagent, then
+starts Claude without waiting for SOL. It collects both answers and presents
+them separately before comparing agreement, disagreement, and useful checks.
+The Python adapter owns Claude transport. The host owns paired orchestration.
 
 ### Configuration
 
-The shipped
-[`config.default.json`](ask-claude-and-sol-for-codex/config.default.json)
-contains the persistent defaults:
+For personal defaults, copy [config.default.json](ask-claude-and-sol-for-codex/config.default.json)
+to `config.json` beside it. The personal file is ignored by Git and overrides
+the shipped defaults. Model, effort, budget, persistence, and Claude
+customizations remain separate settings. `claude.command` accepts a command on
+`PATH` or an absolute executable path.
 
-```json
-{
-  "claude": {
-    "command": "claude",
-    "model": "claude-fable-5-1",
-    "effort": "high",
-    "max_budget_usd": 10,
-    "session_persistence": true,
-    "customizations": false
-  },
-  "sol": {
-    "model": "gpt-5.6-sol",
-    "effort": "xhigh"
-  }
-}
-```
-
-Copy it to `config.json` in the same directory for personal defaults. That file
-is ignored by Git and takes precedence over the shipped configuration.
-
-`claude.command` may be a command on `PATH` or an absolute executable path.
-Claude and SOL model and effort settings can also be overridden for one
-consultation. A requested SOL model must be available through the current host;
-the Skill does not substitute another model silently.
+For a one-off override, put the choice in the request. An unavailable Codex
+model is reported rather than silently replaced.
 
 ### Follow-ups
 
-The first paired consultation retains two different continuation handles:
+The first consultation retains Claude's session ID and SOL's agent target.
+A paired follow-up resumes both. A provider-specific follow-up contacts only
+that adviser. Missing handles leave the surviving result explicitly partial.
+The host's follow-up control must wake an idle subagent, not merely send it a
+passive message.
 
-- Claude's returned session ID;
-- SOL's agent target in the current Codex task.
+The SOL target is valid within the current Codex task. Spawning another
+agent or opening another task starts a fresh consultation, not a continuation.
 
-A paired follow-up triggers a new turn on the existing SOL agent with the host's
-follow-up control and resumes Claude with its explicit session ID. A passive
-message does not wake an idle SOL agent. Provider-specific follow-ups contact
-only the requested adviser. If one handle is unavailable, the surviving
-provider can continue and the result is marked partial.
+### Optional Claude deadline
 
-The SOL target is not a portable CLI session ID. It cannot promise resume from
-a new Codex task or another installation. A newly spawned SOL agent is a fresh
-consultation, not a continuation.
+The optional `--timeout-seconds <positive-number>` applies to one Claude call
+and is disabled by default. Expiry returns exit 124 without an automatic retry,
+budget increase, or success answer. A known resume ID survives the error, but an
+interrupted turn is not guaranteed to be saved.
+
+It terminates and waits for the direct child, not a whole process tree or remote
+job. Startup and inherited pipes can delay return. Synthetic direct-child tests
+passed on Windows and WSL Ubuntu. Live provider cancellation was not tested.
+
+Repository structure and contributor detail are in the
+[maintenance notes](docs/maintenance.md).
 
 ## Failure behavior
 
@@ -165,7 +129,7 @@ consultation, not a continuation.
 - **Failed:** neither provider returned an answer.
 
 Missing subagent support never triggers a Codex CLI fallback. A Claude failure
-never discards a successful SOL result. Agreement is still not proof; the
+never discards a successful SOL result. Agreement is still not proof. The
 calling Codex must verify claims before they become edits, Decisions,
 publication, spending, or another confident victory speech from a green unit
 test.
@@ -188,15 +152,16 @@ queries and fetched URLs leave the local machine. Prompts must not contain
 credentials, tokens, private keys, secret-bearing URLs, private source text
 that should not reach either provider, or unrelated personal data.
 
-## Validation boundary
+## Status
 
-Deterministic tests cover the Claude adapter, configuration, UTF-8 handling,
-session routing, error preservation, and the absence of the former Codex CLI
-runtime path. They cannot prove host-native subagent orchestration.
+Deterministic tests cover Claude transport, configuration, UTF-8, session
+routing, unusable answers, and synthetic deadlines. These tests do not prove
+host-native SOL orchestration.
 
-Host-level acceptance checks must verify fresh SOL context, parallel dispatch,
-partial failure in both directions, provider-specific follow-ups, attribution,
-and an unchanged repository after a nominal review.
+The published v2.0.1 record retains a successful paired acceptance run. No new
+SOL model run was performed for the current local adapter changes. Complete
+host acceptance still needs partial failures in both directions,
+provider-specific follow-ups, attribution, and repository preservation.
 
 ## Sources
 
@@ -213,4 +178,4 @@ and an unchanged repository after a nominal review.
 
 ## License
 
-MIT - see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).

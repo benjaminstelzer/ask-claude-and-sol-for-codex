@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased - 2026-09-05 audit fixes
+
+- Shortened the README, moved contributor layout notes to docs/maintenance.md, and made agent installation the primary path. Safety and evidence limits remain explicit.
+- Added the optional --timeout-seconds Claude CLI setting, disabled by default. Expiry returns exit 124 without retry or budget escalation.
+- Documented the standalone package and development-test layout and removed generated working caches.
+- Documented direct-child cancellation limits without changing the host-owned SOL lane or saved configuration.
+- Included the repository license in the copied package. All 20 tests passed on Windows and WSL Ubuntu without provider calls.
+
 ## 2026-09-01: Fable 5.1 default (v2.0.1)
 
 ### Changed

@@ -128,6 +128,19 @@ Use Claude's `--fresh` only for a stateless Claude consultation.
 `--continue-session` targets Claude's most recent session in the working
 directory; an explicit session ID is safer.
 
+## Optional Claude deadline
+
+Only when the user selects a deadline, pass `--timeout-seconds <positive-number>`.
+It is disabled by default and does not change saved configuration or adviser
+settings. Expiry returns exit 124 with an explicit error and no success answer,
+retry, or budget increase. Retain an already known session ID, but do not invent
+a new ID or promise that the interrupted turn was saved. Resume only on request.
+
+The adapter kills and waits for its direct child process. This is not a process
+tree or remote-job cancellation guarantee. A launcher may leave descendants
+alive, and process startup or inherited pipes can outlast the selected duration.
+Host cancellation and other advisers remain separate responsibilities.
+
 ## Present the result
 
 Present Claude's and SOL's answers separately before synthesis. Preserve these
