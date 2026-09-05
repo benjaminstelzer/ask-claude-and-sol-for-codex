@@ -3,8 +3,6 @@
 A second opinion is useful. Two independent second opinions are more useful
 when they do not take turns borrowing each other's assumptions.
 
-[![Test](https://github.com/benjaminstelzer/ask-claude-and-sol-for-codex/actions/workflows/test.yml/badge.svg)](https://github.com/benjaminstelzer/ask-claude-and-sol-for-codex/actions/workflows/test.yml)
-
 Ask Claude and SOL for Codex is an Agent Skill that sends one question to
 Claude Code and a fresh Codex SOL subagent in parallel. Claude runs through its
 own authenticated CLI. SOL runs inside the Codex host that invoked the Skill,
