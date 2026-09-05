@@ -12,7 +12,7 @@ from pathlib import Path
 from unittest import mock
 
 
-REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 SKILL_ROOT = REPOSITORY_ROOT / "ask-claude-and-sol-for-codex"
 SCRIPT_PATH = SKILL_ROOT / "scripts" / "ask_claude.py"
 SPEC = importlib.util.spec_from_file_location("ask_claude", SCRIPT_PATH)

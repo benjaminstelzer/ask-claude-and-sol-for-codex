@@ -9,7 +9,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / ROOT.name / "scripts" / "ask_claude.py"
 SPEC = importlib.util.spec_from_file_location("answer_adapter", SCRIPT)
 assert SPEC is not None and SPEC.loader is not None
