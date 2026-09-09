@@ -49,6 +49,10 @@ Unless overridden, the Skill uses:
 | Filesystem boundary | Fixed read-only tools | Host permissions plus a read-only instruction |
 | Local customizations | Disabled by Claude safe mode | Host configuration may still apply |
 
+## Compatibility
+
+Codex Desktop app only; the sole host this Skill was developed for. Needs the host's normal project-task controls (list_projects, create, wait, message, archive) and access to the gpt-5.6-sol model. Also requires Python 3.9+, an authenticated Claude Code CLI 2.1.255+, shell access and network. Not usable from Codex CLI alone or on other hosts.
+
 ## Install
 
 In a local Codex session, ask:
