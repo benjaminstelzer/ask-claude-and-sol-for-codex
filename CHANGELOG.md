@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## v3.0.0 - 2026-09-09
+
+- Replace subagent dispatch with fresh normal Codex Desktop project tasks, preserving results before archiving and reusing task IDs for explicit follow-ups.
+- This is a breaking host requirement. Codex CLI alone and hosts without normal project-task controls are not supported.
+- The task-and-archive workflow has deterministic instruction coverage, not new live paired-consultation qualification.
 
 - Document host and tool requirements in the README compatibility block, matching the Skill frontmatter.
 
