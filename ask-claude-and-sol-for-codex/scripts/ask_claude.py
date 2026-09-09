@@ -169,7 +169,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "Pipe one prompt from stdin to Claude Code in read-only print mode. "
-            "The calling Codex owns the paired SOL subagent."
+            "The calling Codex owns the paired normal SOL project task."
         )
     )
     parser.add_argument(

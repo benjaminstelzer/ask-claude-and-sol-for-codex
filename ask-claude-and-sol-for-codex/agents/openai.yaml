@@ -1,4 +1,4 @@
 interface:
   display_name: "Ask Claude and SOL for Codex"
-  short_description: "Claude plus a fresh SOL subagent"
-  default_prompt: "Use $ask-claude-and-sol-for-codex to ask Claude and a fresh SOL subagent for parallel second opinions."
+  short_description: "Claude plus a fresh SOL project task"
+  default_prompt: "Use $ask-claude-and-sol-for-codex to ask Claude and a fresh normal SOL task in the current project for parallel second opinions, then archive the SOL task after preserving its result."

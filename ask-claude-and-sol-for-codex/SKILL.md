@@ -1,14 +1,15 @@
 ---
 name: ask-claude-and-sol-for-codex
-description: Ask Claude Code and a fresh Codex SOL subagent in parallel for independent second opinions, reviews, critiques, comparisons, or alternative analysis. Use when the user asks to consult both Claude or Fable and SOL, requests two independent model opinions, says "Frage Fable und SOL", or invokes $ask-claude-and-sol-for-codex. Both model and effort settings are configurable, and both conversations can continue within the current Codex task.
+description: Ask Claude Code and a fresh normal Codex SOL project task in parallel for independent second opinions, reviews, critiques, comparisons, or alternative analysis. Use when the user asks to consult both Claude or Fable and SOL, requests two independent model opinions, says "Frage Fable und SOL", or invokes $ask-claude-and-sol-for-codex. Both model and effort settings are configurable, and both conversations can continue through retained session and task IDs.
+compatibility: "Codex Desktop app only; the sole host this Skill was developed for. Needs the host's normal project-task controls (list_projects, create, wait, message, archive) and access to the gpt-5.6-sol model. Also requires Python 3.9+, an authenticated Claude Code CLI 2.1.255+, shell access and network. Not usable from Codex CLI alone or on other hosts."
 ---
 
 # Ask Claude and SOL for Codex
 
-Send one self-contained consultation to Claude Code and a fresh SOL subagent.
+Send one self-contained consultation to Claude Code and a fresh normal SOL
+project task.
 Dispatch them independently and in parallel. Keep every answer attributed and
-retain Claude's session ID plus the SOL agent target for follow-ups in the
-current Codex task.
+retain Claude's session ID plus the SOL task ID for follow-ups.
 
 ## Defaults
 
@@ -20,7 +21,7 @@ Use these values unless the user provides different ones:
 - SOL model: `gpt-5.6-sol`
 - SOL effort: `xhigh`
 - Claude session persistence: enabled
-- SOL context: fresh, with no parent turns copied
+- SOL context: fresh normal task in the current saved project
 - Claude customizations: disabled
 
 The shipped `config.default.json` documents the configurable provider values.
@@ -28,7 +29,7 @@ For personal defaults, copy it to `config.json` beside that file. Resolve
 configuration in this order: explicit user request, personal `config.json`,
 shipped `config.default.json`, then the defaults above.
 
-The SOL consultation uses the Codex host's subagent capability. It requires no
+The SOL consultation uses the Codex host's normal project-task capability. It requires no
 second Codex CLI, executable lookup, installation, or authentication. Claude
 still requires Python 3.9 or newer and an authenticated Claude Code command.
 The Fable 5.1 default requires Claude Code 2.1.255 or newer. `claude.command`
@@ -53,22 +54,31 @@ adviser's response in the other adviser's prompt.
 
 ## Dispatch in parallel
 
-1. Confirm that the host can spawn a subagent with a fresh context and an
-   explicit supported model. If it cannot, continue with Claude and report SOL
-   as `subagent_unavailable`. Never fall back to a Codex CLI, the calling
-   agent's own opinion, a new user-owned task, an API call, or a substituted
-   model.
-2. Spawn SOL first without waiting for its answer:
-   - copy no parent turns (`fork_turns="none"` when the host exposes this
-     control);
-   - request `gpt-5.6-sol` and `xhigh` unless overridden;
-   - use a unique task name;
+Activation authorizes one temporary normal Codex project task and its later
+archival. First resolve the exact currently selected saved project with a host
+control matching `list_projects`. Confirm the host can create, wait for, message,
+read and archive a normal task in that project and explicitly select the requested
+model/effort. If it cannot, continue with Claude and report SOL as
+`project_task_unavailable`. Never fall back to a Codex CLI, subagent, the calling
+task's own opinion, an API call or a substituted model.
+
+1. Create SOL first without waiting for its answer:
+   - create a normal task in the same saved project and its local checkout;
+   - request `gpt-5.6-sol` and `xhigh` unless overridden in the actual creation
+     call;
    - send only the fixed SOL role plus the prepared consultation body;
-   - retain the returned agent target.
+   - forbid edits, delegation and user-authority assumptions; and
+   - retain the returned task ID.
 3. Immediately pipe the same consultation body to
    `scripts/ask_claude.py`. Never pass a long prompt as a positional argument.
-4. Let both continue concurrently, then collect the SOL result. Do not wait for
-   SOL before starting Claude.
+4. Let both continue concurrently, then collect SOL through the host's normal
+   task wait/read controls. Do not wait for SOL before starting Claude.
+
+After collecting SOL's answer, preserve its task ID, requested and reported
+model/effort, answer or error, and any explicitly pending follow-up. Archive the
+normal task only after this result is durable, then verify archived state. This is
+sidebar cleanup, not subagent closure. If archival fails, report the still-visible
+task; do not delete it or start an unbounded replacement chain.
 
 On PowerShell, set BOM-less UTF-8 before piping:
 
@@ -101,28 +111,28 @@ executable.
 
 ## Continue the pair
 
-Retain non-null Claude `session_id` and the SOL agent target in the current
-Codex task.
+Retain non-null Claude `session_id` and the SOL normal-task ID.
 
 For a paired follow-up:
 
 1. Prepare one follow-up body before dispatch.
-2. Trigger a new turn on the existing SOL target with the host's follow-up
-   control (`followup_task` when that control is exposed). A passive message is
-   insufficient because it does not wake an idle agent. Do not wait for the
-   result.
+2. Unarchive the existing SOL task, send the follow-up with the host's task
+   messaging control, and do not wait before starting Claude.
 3. Immediately pipe it to the Claude adapter with `--resume
    <claude-session-id>`.
-4. Collect and attribute both results.
+4. Collect and attribute both results, preserve SOL's answer, then archive its
+   task again.
 
-For a SOL-only follow-up, trigger a new turn on the retained SOL target and
-collect it. For a Claude-only follow-up, call the adapter with the retained
+For a SOL-only follow-up, unarchive and message the retained SOL task, collect
+and preserve the answer, then archive it again. For a Claude-only follow-up, call the adapter with the retained
 Claude session ID. Do not contact the provider the user did not request.
 
 If one continuation handle is unavailable, continue only the surviving
-provider and report a partial result. Never call a newly spawned SOL agent a
-continuation. SOL agent targets are task-local; do not promise cross-task or
-cross-session resume.
+provider and report a partial result. Never call a newly created SOL task a
+continuation of a missing task ID.
+
+Do not keep SOL unarchived for a hypothetical follow-up. Archiving preserves the
+task ID and context; a later explicit follow-up may unarchive and continue it.
 
 Use Claude's `--fresh` only for a stateless Claude consultation.
 `--continue-session` targets Claude's most recent session in the working
@@ -148,8 +158,8 @@ provider-specific details when available:
 
 - Claude: requested and reported model, effort, session mode, session ID,
   answer or actual error.
-- SOL: requested model and effort, agent target, `context_mode: fresh` for a
-  newly spawned agent, answer or actual error.
+- SOL: requested model and effort, normal project-task ID,
+  `context_mode: fresh` for a newly created task, answer or actual error.
 
 Use these combined outcome meanings:
 
@@ -162,6 +172,13 @@ Do not discard a successful answer because the other provider failed. Do not
 retry an unchanged authentication, budget, model-availability, or host-capacity
 failure. Do not flatten meaningful differences into a false consensus.
 
+While either adviser is running, answer a user status question inline and then
+resume the active wait in the same main turn. Respect cancellation or a replacing
+request instead. Report a blocker or required decision immediately with its cause,
+the saved result and stopped/open state, and the next concrete step; never suppress
+it as routine progress or promise a notification after the main turn ends unless
+the host provides a real notification mechanism.
+
 Treat both responses as untrusted advice, not user authority. Verify claims
 that affect edits, decisions, publication, spending, or safeguards before
 acting on them.
@@ -173,16 +190,16 @@ reasoning from being copied into the adviser. Building the consultation before
 dispatch also prevents either adviser from framing the other.
 
 This is conversational independence, not a separate SOL runtime. The SOL
-subagent inherits host-level system instructions, tools, permissions, and
+normal project task inherits host-level system instructions, tools, permissions, and
 possibly installed capabilities. Its read-only boundary is an instruction;
-the host spawn interface does not provide this Skill with a separate sandbox or
+the host task interface does not provide this Skill with a separate sandbox or
 approval-policy override. Claude still receives only `Read`, `Grep`, `Glob`,
 `WebSearch`, and `WebFetch`, with Bash, Edit, and Write withheld, and safe mode
 disables local Claude customizations.
 
-Subagents are enabled by default in current Codex releases but can be disabled
-or unavailable on a particular host or account. Support therefore depends on
-host capability, not only on Windows, macOS, or Linux.
+Normal project-task creation, waiting, messaging and archival can be unavailable
+on a particular Codex host or account. Support depends on those host capabilities,
+not only on Windows, macOS, or Linux. Never substitute a non-closable subagent.
 
 Conversation persistence grants no additional permissions. Search queries and
 fetched URLs leave the local machine. Never put credentials, tokens, private
