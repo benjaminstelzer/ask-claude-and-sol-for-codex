@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.0.1 - 2026-09-10
+
+- Deliver the SOL opinion directly to the verified original calling task,
+  with a delivery receipt in the adviser task and no conversation-log replay.
+- Preserve that destination on follow-ups and report missing or incomplete
+  delivery instead of treating silence as a complete answer.
+- Keep compatibility requirements together in the README. All 21 offline
+  tests passed; no new live paired-consultation qualification is claimed.
+
 ## v3.0.0 - 2026-09-09
 
 - Replace subagent dispatch with fresh normal Codex Desktop project tasks, preserving results before archiving and reusing task IDs for explicit follow-ups.
