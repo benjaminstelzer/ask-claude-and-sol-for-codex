@@ -53,6 +53,8 @@ Unless overridden, the Skill uses:
 
 Codex Desktop app only; the sole host this Skill was developed for. Needs the host's normal project-task controls (list_projects, create, wait, message, archive) and access to the gpt-5.6-sol model. Also requires Python 3.9+, an authenticated Claude Code CLI 2.1.255+, shell access and network. Not usable from Codex CLI alone or on other hosts.
 
+Claude usage limits and model charges apply.
+
 ## Install
 
 In a local Codex session, ask:
@@ -66,13 +68,6 @@ Report the installed location and whether the host discovers the Skill.
 
 The agent needs source access and permission to write to its personal Skills
 location. Manual fallback: [Codex Skills guide](https://learn.chatgpt.com/docs/build-skills).
-
-Requires Python 3.9 or newer and an authenticated Claude Code 2.1.255 or newer.
-Claude usage limits and model charges apply.
-The Codex host also needs normal project-task creation, waiting, messaging and
-archival plus access to `gpt-5.6-sol` with `xhigh` effort. No separate Codex CLI
-is required. Missing task support produces a partial consultation when Claude
-succeeds, not a fallback runtime.
 
 ## What it enforces
 
