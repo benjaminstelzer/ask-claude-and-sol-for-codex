@@ -113,8 +113,7 @@ It terminates and waits for the direct child, not a whole process tree or remote
 job. Startup and inherited pipes can delay return. Synthetic direct-child tests
 passed on Windows and WSL Ubuntu. Live provider cancellation was not tested.
 
-Repository structure and contributor detail are in the
-[maintenance notes](development/docs/maintenance.md).
+Repository validation and retention rules are in [development](development/README.md).
 
 ## Failure behavior
 
@@ -171,8 +170,6 @@ The published v2.0.1 record retains a successful paired acceptance run. No new
 SOL model run was performed for the current local adapter changes. Complete
 host acceptance still needs partial failures in both directions,
 provider-specific follow-ups, attribution, and repository preservation.
-
-Repository development and the current path mapping are in [development/](development/README.md).
 
 ## Sources
 

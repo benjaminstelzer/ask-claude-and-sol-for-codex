@@ -1,19 +1,17 @@
 # Development
 
-The only installable Skill source is [`ask-claude-and-sol-for-codex/`](../ask-claude-and-sol-for-codex/).
-This directory owns repository development and is not an installation package.
+The only installable package is [`ask-claude-and-sol-for-codex/`](../ask-claude-and-sol-for-codex/). Tests and maintenance material in this directory are not installed with the Skill.
 
-## Current layout
+## Validate
 
-Paths recorded before the 2026-09-05 structure change are historical. Use this mapping
-for current local files; frozen evidence retains its original contents and hashes.
+Run the deterministic adapter suite from the repository root:
 
-| Former repository path | Current repository path |
-| --- | --- |
-| `docs` | `development/docs` |
-| `tests` | `development/tests` |
+```text
+python -B -m unittest discover -s development/tests -v
+```
 
-Run development commands from this directory unless the command specifies otherwise.
-The installable package is one directory above. Tests, when present, run with
-`python -B -m unittest discover -s tests` in the existing development environment.
-This move does not add dependencies or establish new model or host qualification.
+Also check Skill frontmatter, UI metadata, JSON configuration, relative links, and package structure. Static tests do not prove live Claude or SOL availability, model quality, or complete host orchestration.
+
+## Retention
+
+Keep current tests and this maintenance summary. Put ad-hoc audits, live traces, transcripts, benchmark runs, and generated reviews in temporary storage. Retain evaluation evidence only as a concise repository-owned summary when a published release links it.
