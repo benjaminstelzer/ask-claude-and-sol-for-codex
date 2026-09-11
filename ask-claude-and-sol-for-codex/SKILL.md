@@ -54,8 +54,12 @@ adviser's response in the other adviser's prompt.
 
 ## Dispatch in parallel
 
-Activation authorizes one temporary normal Codex project task and its later
-archival. First resolve the exact currently selected saved project with a host
+Activation alone grants no task-creation or model-selection authority. Resolve
+each from the user's actual request and the host's rules. Reuse authorization
+already given for this consultation or its follow-up; ask only for a missing
+required authorization before the dependent action. An unavailable SOL lane
+does not prevent an independently authorized Claude consultation.
+First resolve the exact currently selected saved project with a host
 control matching `list_projects`. Confirm the host can create, wait for, message,
 read and archive a normal task in that project and explicitly select the requested
 model/effort. If it cannot, continue with Claude and report SOL as
