@@ -187,3 +187,17 @@ provider-specific follow-ups, attribution, and repository preservation.
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+## How it was developed
+
+I developed this Skill to get two independent opinions while keeping their
+answers, failures and follow-up conversations distinct. Its
+[changelog](CHANGELOG.md) traces the move from a second Codex CLI to host-owned
+SOL tasks, then to normal project tasks with direct result delivery and
+archival. Adapter tests cover the Claude side, while earlier paired runs used
+a transport that has since been replaced.
+
+Real consultations remain part of the development process. I analyze complete
+task histories for missing results, confused continuation handles and repeated
+context that wastes tokens, then revise and check the affected instructions.
+Earlier live runs do not qualify the current orchestration.
