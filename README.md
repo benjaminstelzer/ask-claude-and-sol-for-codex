@@ -1,13 +1,13 @@
 # Ask Claude and SOL for Codex
 
-A second opinion is useful. Two independent second opinions are more useful
-when they do not take turns borrowing each other's assumptions.
+Two advisers can find different problems if each gets room to reach its own
+conclusion. This Skill sends the same question to both before either sees the
+other's answer.
 
 Ask Claude and SOL for Codex is an Agent Skill that sends one question to
 Claude Code and a fresh normal Codex SOL project task in parallel. Claude runs through its
 own authenticated CLI. SOL runs inside the Codex host that invoked the Skill,
-so it needs no second Codex CLI, runtime installation, executable lookup, or
-login.
+so it needs no separate Codex CLI installation or login.
 
 The defaults are **Fable 5.1 with high reasoning effort** and **GPT-5.6 SOL with
 `xhigh` (very high) reasoning effort**.
@@ -109,25 +109,20 @@ and is disabled by default. Expiry returns exit 124 without an automatic retry,
 budget increase, or success answer. A known resume ID survives the error, but an
 interrupted turn is not guaranteed to be saved.
 
-It terminates and waits for the direct child, not a whole process tree or remote
-job. Startup and inherited pipes can delay return. Synthetic direct-child tests
-passed on Windows and WSL Ubuntu. Live provider cancellation was not tested.
-
-Repository validation and retention rules are in [development](development/README.md).
+The deadline terminates the direct child process. It does not guarantee that
+remote work stops, and startup or inherited pipes can delay return.
 
 ## How it was developed
 
-I developed this Skill to get two independent opinions while keeping their
-answers, failures and follow-up conversations distinct. Its
-[changelog](CHANGELOG.md) traces the move from a second Codex CLI to host-owned
-SOL tasks, then to normal project tasks with direct result delivery and
-archival. Adapter tests cover the Claude side, while earlier paired runs used
-a transport that has since been replaced.
+I developed this Skill to get two independent opinions without mixing their
+answers or losing either conversation. The Codex side originally used a second
+CLI process. It later moved into host-owned tasks, then normal project tasks
+with direct answer delivery and archival.
 
-Real consultations remain part of the development process. I analyze complete
-task histories for missing results, confused continuation handles and repeated
-context that wastes tokens, then revise and check the affected instructions.
-Earlier live runs do not qualify the current orchestration.
+The [changelog](CHANGELOG.md) follows that progression. In real consultations,
+I look for missing results, follow-ups sent to the wrong adviser and context
+repeated without a reason. Those failures tell me which instruction or part of
+the adapter needs to change.
 
 ## Failure behavior
 
@@ -137,10 +132,8 @@ Earlier live runs do not qualify the current orchestration.
 - **Failed:** neither provider returned an answer.
 
 Missing normal project-task support never triggers a Codex CLI or subagent fallback. A Claude failure
-never discards a successful SOL result. Agreement is still not proof. The
-calling Codex must verify claims before they become edits, Decisions,
-publication, spending, or another confident victory speech from a green unit
-test.
+never discards a successful SOL result. The calling Codex still needs to verify the advice before acting on it, even
+when both advisers agree.
 
 ## Independence and security limits
 
@@ -160,30 +153,10 @@ queries and fetched URLs leave the local machine. Prompts must not contain
 credentials, tokens, private keys, secret-bearing URLs, private source text
 that should not reach either provider, or unrelated personal data.
 
-## Codex task lifecycle
-
-On 2026-09-09, the tested Codex Desktop tool surface could create, wait for,
-message and archive normal project tasks, but exposed no control whose documented
-semantics close a completed subagent and free its slot. The Skill therefore uses
-no subagent: it preserves SOL's result, archives the normal task, and verifies the
-archived state. Archiving is sidebar cleanup, not a claim that a subagent slot was
-freed. Hosts lacking the normal task controls return a partial result.
-
 ## Status
 
-The normal project-task and archive workflow added on 2026-09-09 has
-deterministic instruction coverage but has not yet been exercised in a live
-paired consultation. Earlier live evidence used the superseded subagent
-transport.
-
-Deterministic tests cover Claude transport, configuration, UTF-8, session
-routing, unusable answers, and synthetic deadlines. These tests do not prove
-host-native SOL orchestration.
-
-The published v2.0.1 record retains a successful paired acceptance run. No new
-SOL model run was performed for the current local adapter changes. Complete
-host acceptance still needs partial failures in both directions,
-provider-specific follow-ups, attribution, and repository preservation.
+The current project-task workflow has not yet been tested in a live paired
+consultation. Earlier runs used a transport that has since been replaced.
 
 ## Sources
 

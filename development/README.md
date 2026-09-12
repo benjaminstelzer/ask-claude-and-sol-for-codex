@@ -14,4 +14,6 @@ Static tests do not prove live Claude or SOL availability, model quality, or com
 
 ## Retention
 
-Keep current tests and this maintenance summary. Put ad-hoc audits, live traces, transcripts, benchmark runs, and generated reviews in temporary storage. Retain evaluation evidence only as a concise repository-owned summary when a published release links it.
+Keep current tests and this maintenance summary. Put ad-hoc audits, live traces, transcripts, benchmark runs, and generated reviews in temporary storage. Retain a concise evaluation summary only when it explains a useful result or
+development lesson and a published release links it. Routine checks and
+inconclusive miniature runs stay temporary.

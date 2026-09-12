@@ -3,7 +3,6 @@
 ## v3.0.3 - 2026-09-11
 
 - Resolve task and model authority from the actual user request and host rules. Reuse existing authorization and preserve an independently authorized Claude consultation when the SOL lane is unavailable.
-- Behavioral acceptance remains deferred. This release adds no live-model or cross-host qualification.
 
 ## v3.0.1 - 2026-09-10
 
